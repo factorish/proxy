@@ -1,0 +1,4 @@
+backend = "env" # etcd
+confdir = "/app"
+interval = 5
+watch = true

@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# This script is designed to be run inside the container
+#
+
+# fail hard and fast even on pipelines
+set -eo pipefail
+
+# set debug based on envvar
+[[ $DEBUG ]] && set -x
+
+DIR=$(dirname $0)
+
+# functions
+. $DIR/functions
+
+
+# Environment variables that should be passed in via `docker run` command.
+
+# Defaults for your app:
+export APP_NAME=${APP_NAME:-"factorish-proxy"}
+export STATS_PORT=${STATS_PORT:-8085}
+
+if [[ -n $ETCD_HOST ]]; then
+  echo "==> ETCD_HOST set.  starting ${APP_NAME} etcd support."
+  export ETCD_HOST=${ETCD_HOST:-$HOST}
+  export ETCD_PORT=${ETCD_PORT:-4001}
+  export ETCD="$ETCD_HOST:$ETCD_PORT"
+  export ETCD_PATH=${ETCD_PATH:-"/services/$APP_NAME"}
+  export ETCD_TTL=${ETCD_TTL:-10}
+  export ETCD_OPTIONS="--no-sync -C $ETCD"
+  export CONFD_OPTIONS="-node $ETCD -prefix /services -config-file /app/confd_etcd.toml"
+  export SLEEP_TIME=$(($ETCD_TTL/2))
+  configure_etcd
+else
+  echo "--> env ETCD_HOST must be set"
+fi
+
+# wait for confd to run once and install initial templates
+until confd -onetime $CONFD_OPTIONS; do
+  echo "echo ==> ${APP_NAME}: waiting for confd to write initial templates..."
+  sleep $SLEEP_TIME
+done
+
+echo Starting ${APP_NAME}
+
+# smart shutdown on SIGINT and SIGTERM
+trap on_exit INT TERM
+
+/app/bin/healthcheck &
+
+confd $CONFD_OPTIONS &
+
+exec /usr/sbin/haproxy -d -f /etc/haproxy/haproxy.cfg -V
+
+wait
