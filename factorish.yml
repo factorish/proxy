@@ -24,7 +24,7 @@ factorish:
         - '-v /home/core/share/registry:/tmp/registry'
       command:
     registrator:
-      repository: progrium/registrator
+      repository: gliderlabs/registrator
       docker_options:
         - '-v /var/run/docker.sock:/tmp/docker.sock:ro'
         - '-h $HOSTNAME'
@@ -32,7 +32,7 @@ factorish:
     proxy:
       repository: factorish/proxy
       docker_options:
-        - '-p 8080:8080 -e registry=5000'
+        - '-p 8080:8080 -e registry=8080'
         - '-e ETCD_HOST=$COREOS_PRIVATE_IPV4'
       dockerfile: /home/core/share/proxy
       command:

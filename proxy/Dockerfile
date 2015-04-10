@@ -1,6 +1,6 @@
 FROM gliderlabs/alpine
 
-RUN apk --update add curl bash haproxy
+RUN apk --update add curl bash nginx
 
 # install etcdctl and confd
 RUN \

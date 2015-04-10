@@ -19,7 +19,6 @@ DIR=$(dirname $0)
 
 # Defaults for your app:
 export APP_NAME=${APP_NAME:-"factorish-proxy"}
-export STATS_PORT=${STATS_PORT:-8085}
 
 if [[ -n $ETCD_HOST ]]; then
   echo "==> ETCD_HOST set.  starting ${APP_NAME} etcd support."
@@ -27,7 +26,7 @@ if [[ -n $ETCD_HOST ]]; then
   export ETCD_PORT=${ETCD_PORT:-4001}
   export ETCD="$ETCD_HOST:$ETCD_PORT"
   export ETCD_PATH=${ETCD_PATH:-"/services/$APP_NAME"}
-  export ETCD_TTL=${ETCD_TTL:-10}
+  export ETCD_TTL=${ETCD_TTL:-30}
   export ETCD_OPTIONS="--no-sync -C $ETCD"
   export CONFD_OPTIONS="-node $ETCD -prefix /services -config-file /app/confd_etcd.toml"
   export SLEEP_TIME=$(($ETCD_TTL/2))
@@ -47,10 +46,12 @@ echo Starting ${APP_NAME}
 # smart shutdown on SIGINT and SIGTERM
 trap on_exit INT TERM
 
+mkdir -p /tmp/nginx/client-body
+
 /app/bin/healthcheck &
 
 confd $CONFD_OPTIONS &
 
-exec /usr/sbin/haproxy -d -f /etc/haproxy/haproxy.cfg -V
+exec /usr/sbin/nginx
 
 wait

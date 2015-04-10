@@ -1,6 +1,6 @@
 [template]
-src   = "haproxy.cfg"
-dest  = "/etc/haproxy/haproxy.cfg"
+src   = "nginx.conf"
+dest  = "/etc/nginx/nginx.conf"
 owner = "root"
 group = "root"
 mode  = "0644"
@@ -8,4 +8,4 @@ keys = [
   "/"
 ]
 check_cmd = "/app/bin/check {{ .src }}"
-reload_cmd = "/app/bin/reload_haproxy"
+reload_cmd = "kill -1 1"
