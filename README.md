@@ -20,7 +20,7 @@ $ etcdctl ls /services  --recursive
 /services/registry/core-03:factorish-registry:5000
 ```
 
-We simply need to tell factorish-proxy the etcd enpoint to connect to and provide it the name of the service ( in this case registry ) and the port to load balance it on via an environment variable `-e registry=8080`.
+We simply need to tell factorish-proxy the etcd endpoint to connect to and provide it the name of the service ( in this case registry ) and the port to load balance it on via an environment variable `-e registry=8080`.
 
 ```
 $ docker run -d -p 8080:8080 -e registry=8080 \
